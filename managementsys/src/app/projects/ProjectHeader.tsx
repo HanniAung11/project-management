@@ -1,20 +1,59 @@
 "use client"
-import { Clock, Filter, Grid3x3, List, PlusSquare, Share2, Table } from 'lucide-react';
+import { Clock, Filter, Grid3x3, List, PlusSquare, Search, Share2, Table } from 'lucide-react';
 import Header from '../../(components)/Header';
 import React,{useState} from 'react'
 import ModalNewProject from './ModalNewProject'
+import ModalFilter, { FilterState } from '@/(components)/ModalFilter';
+import { useGetUsersQuery } from '@/state/api';
 
 type Props = {
     activeTab:string;
-    setActiveTab:(tabName:string)=>void 
+    setActiveTab:(tabName:string)=>void;
+    searchTerm: string;
+    onSearchChange: (term: string) => void;
+    filters: FilterState;
+    onFiltersChange: (filters: FilterState) => void;
 }
 
-function ProjectHeader({activeTab,setActiveTab}: Props) {
+function ProjectHeader({activeTab,setActiveTab, searchTerm, onSearchChange, filters, onFiltersChange}: Props) {
   console.log("ProjectHeader rendering");
   const [isModalNewProjectOpen,setIsModalNewProjectOpen]=useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const { data: users } = useGetUsersQuery();
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Project URL copied to clipboard!');
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('Project URL copied to clipboard!');
+      } catch (fallbackErr) {
+        alert('Failed to copy URL. Please copy manually: ' + url);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  const hasActiveFilters = filters.priority || filters.status || filters.assigneeId || filters.tag;
+
     return (
     <div className="px-4 xl:px-6">
       <ModalNewProject isOpen={isModalNewProjectOpen} onClose={()=>setIsModalNewProjectOpen(false)}/>
+      <ModalFilter 
+        isOpen={isFilterModalOpen} 
+        onClose={()=>setIsFilterModalOpen(false)}
+        onApplyFilters={onFiltersChange}
+        currentFilters={filters}
+        availableUsers={users || []}
+      />
 
         <div className="pb-6 pt-6 lg:pb-4 lg:pt-8">
             <Header name="Product Design Development"
@@ -35,16 +74,34 @@ function ProjectHeader({activeTab,setActiveTab}: Props) {
             <TabButton name="Table" icon={<Table className="h-5 w-5" />} setActiveTab={setActiveTab} activeTab={activeTab}/>
           </div>
           <div className="flex items-center gap-2">
-            <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
+            <button 
+              onClick={() => setIsFilterModalOpen(true)}
+              className={`text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300 relative ${
+                hasActiveFilters ? 'text-pink-500 dark:text-pink-400' : ''
+              }`}
+              title="Filter tasks"
+            >
               <Filter className="h-5 w-5"/>
+              {hasActiveFilters && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 bg-pink-500 rounded-full"></span>
+              )}
             </button>
-            <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
+            <button 
+              onClick={handleShare}
+              className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300"
+              title="Share project"
+            >
               <Share2 className="h-5 w-5"/>
             </button>
             <div className="relative">
-              <input type='text' placeholder="Search Task" className="rounded-md border py-1 pl-10 pr-4 focus:outline-none dark:border-dark-secondary dark:bg-dark-secondary dark:text-white"/>
-                <Grid3x3 className="absolute left-3 top-2 h-4 w-4 text-gray-400 dark:text-neutral-500"/>
-              
+              <input 
+                type='text' 
+                placeholder="Search Task" 
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="rounded-md border py-1 pl-10 pr-4 focus:outline-none dark:border-dark-secondary dark:bg-dark-secondary dark:text-white"
+              />
+              <Search className="absolute left-3 top-2 h-4 w-4 text-gray-400 dark:text-neutral-500"/>
             </div>
           </div>
         </div>

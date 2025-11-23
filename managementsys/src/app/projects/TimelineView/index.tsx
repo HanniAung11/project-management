@@ -3,13 +3,16 @@ import { useGetTasksQuery } from '@/state/api';
 import React, { useMemo, useState } from 'react';
 import {DisplayOption, Gantt, ViewMode} from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
+import { FilterState } from '@/(components)/ModalFilter';
 
 type Props = {
     id:string;
     setIsModalNewTaskOpen:(isOpen:boolean)=>void;
+    searchTerm?: string;
+    filters?: FilterState;
 }
 type TaskTypeItems="task"| "milestone"| "project";
-const Timeline = ({id,setIsModalNewTaskOpen}: Props) => {
+const Timeline = ({id,setIsModalNewTaskOpen, searchTerm = "", filters}: Props) => {
     const isDarkMode=useAppSelector((state)=>state.global.isDarkMode);
     const {
             data:tasks,
@@ -32,7 +35,43 @@ const Timeline = ({id,setIsModalNewTaskOpen}: Props) => {
                 const startDate = new Date(task.startDate as string);
                 const endDate = new Date(task.dueDate as string);
                 
-                return !isNaN(startDate.getTime()) && !isNaN(endDate.getTime());
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
+
+                // Search filter
+                if (searchTerm) {
+                  const searchLower = searchTerm.toLowerCase();
+                  const matchesSearch = 
+                    task.title?.toLowerCase().includes(searchLower) ||
+                    task.description?.toLowerCase().includes(searchLower) ||
+                    task.tags?.toLowerCase().includes(searchLower);
+                  if (!matchesSearch) return false;
+                }
+
+                // Priority filter
+                if (filters?.priority && task.priority !== filters.priority) {
+                  return false;
+                }
+
+                // Status filter
+                if (filters?.status && task.status !== filters.status) {
+                  return false;
+                }
+
+                // Assignee filter
+                if (filters?.assigneeId && task.assignedUserId !== filters.assigneeId) {
+                  return false;
+                }
+
+                // Tag filter
+                if (filters?.tag) {
+                  const tagLower = filters.tag.toLowerCase();
+                  const taskTags = task.tags?.toLowerCase() || '';
+                  if (!taskTags.includes(tagLower)) {
+                    return false;
+                  }
+                }
+                
+                return true;
             })
             .map((task)=>({
                 start:new Date(task.startDate as string),
@@ -43,7 +82,7 @@ const Timeline = ({id,setIsModalNewTaskOpen}: Props) => {
                 progress:task.points ? (task.points /10) * 100 : 0,
                 isDisable:false
             }));
-    },[tasks]);
+    },[tasks, searchTerm, filters]);
 
     const handleViewModeChange=(
         event:React.ChangeEvent<HTMLSelectElement>,

@@ -1,5 +1,5 @@
 import { Priority, useGetTasksQuery, useUpdateTaskStatusMutation } from '@/state/api';
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {DndProvider, useDrag, useDrop} from "react-dnd";
 import {HTML5Backend } from 'react-dnd-html5-backend'
 import {Task as TaskType} from "@/state/api"
@@ -7,14 +7,17 @@ import { EllipsisVertical, MessageSquareMore, Plus } from 'lucide-react';
 import { format } from "date-fns";
 import Image from 'next/image';
 import ModalComments from '@/(components)/ModalComments';
+import { FilterState } from '@/(components)/ModalFilter';
 
 type BoardProps = {
     id:string;
     setIsModalNewTaskOpen:(isOpen:boolean)=>void;
+    searchTerm?: string;
+    filters?: FilterState;
 };
 const taskStatus=["To Do","Work In Progress","Under Review","Completed"];
 
-const BoardView = ({id,setIsModalNewTaskOpen}: BoardProps) => {
+const BoardView = ({id,setIsModalNewTaskOpen, searchTerm = "", filters}: BoardProps) => {
     const {
         data:tasks,
         isLoading,
@@ -25,6 +28,50 @@ const BoardView = ({id,setIsModalNewTaskOpen}: BoardProps) => {
     const moveTask=(taskId:number,toStatus:string)=>{
         updateTaskStatus({taskId,status:toStatus});
     };
+
+    // Filter tasks based on search and filters
+    const filteredTasks = useMemo(() => {
+        if (!tasks) return [];
+        
+        return tasks.filter((task) => {
+            // Search filter
+            if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase();
+                const matchesSearch = 
+                    task.title?.toLowerCase().includes(searchLower) ||
+                    task.description?.toLowerCase().includes(searchLower) ||
+                    task.tags?.toLowerCase().includes(searchLower);
+                if (!matchesSearch) return false;
+            }
+
+            // Priority filter
+            if (filters?.priority && task.priority !== filters.priority) {
+                return false;
+            }
+
+            // Status filter
+            if (filters?.status && task.status !== filters.status) {
+                return false;
+            }
+
+            // Assignee filter
+            if (filters?.assigneeId && task.assignedUserId !== filters.assigneeId) {
+                return false;
+            }
+
+            // Tag filter
+            if (filters?.tag) {
+                const tagLower = filters.tag.toLowerCase();
+                const taskTags = task.tags?.toLowerCase() || '';
+                if (!taskTags.includes(tagLower)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }, [tasks, searchTerm, filters]);
+
     if(isLoading) return <div>Loading...</div>;
     if(error){
          return <div>An error occurred while fetching tasks</div>}
@@ -35,7 +82,7 @@ const BoardView = ({id,setIsModalNewTaskOpen}: BoardProps) => {
                 <TaskColumn 
                 key={status}
                 status={status}
-                tasks={tasks || []}
+                tasks={filteredTasks}
                 moveTask={moveTask}
                 setIsModalNewTaskOpen={setIsModalNewTaskOpen}/>
             ))}

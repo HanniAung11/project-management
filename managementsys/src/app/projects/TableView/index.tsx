@@ -1,13 +1,17 @@
 import Header from '@/(components)/Header';
 import { useAppSelector } from '@/app/redux';
 import { useGetTasksQuery } from '@/state/api';
-import React from 'react'
+import React, { useMemo } from 'react'
 import {DataGrid, GridColDef} from "@mui/x-data-grid"
 import { dataGridClassNames, dataGridSxStyles } from '@/lib/utils';
 import { PlusSquare } from 'lucide-react';
+import { FilterState } from '@/(components)/ModalFilter';
+
 type Props = {
     id:string;
     setIsModalNewTaskOpen:(isOpen:boolean)=>void;
+    searchTerm?: string;
+    filters?: FilterState;
 }
 
 const columns:GridColDef[]=[
@@ -64,13 +68,57 @@ const columns:GridColDef[]=[
     },
 ]
 
-const TableView = ({id,setIsModalNewTaskOpen}: Props) => {
+const TableView = ({id,setIsModalNewTaskOpen, searchTerm = "", filters}: Props) => {
     const isDarkMode=useAppSelector((state)=>state.global.isDarkMode);
         const {
                 data:tasks,
                 isLoading,
                 error,
             }=useGetTasksQuery({projectId:Number(id)});
+
+    // Filter tasks based on search and filters
+    const filteredTasks = useMemo(() => {
+      if (!tasks) return [];
+      
+      return tasks.filter((task) => {
+        // Search filter
+        if (searchTerm) {
+          const searchLower = searchTerm.toLowerCase();
+          const matchesSearch = 
+            task.title?.toLowerCase().includes(searchLower) ||
+            task.description?.toLowerCase().includes(searchLower) ||
+            task.tags?.toLowerCase().includes(searchLower);
+          if (!matchesSearch) return false;
+        }
+
+        // Priority filter
+        if (filters?.priority && task.priority !== filters.priority) {
+          return false;
+        }
+
+        // Status filter
+        if (filters?.status && task.status !== filters.status) {
+          return false;
+        }
+
+        // Assignee filter
+        if (filters?.assigneeId && task.assignedUserId !== filters.assigneeId) {
+          return false;
+        }
+
+        // Tag filter
+        if (filters?.tag) {
+          const tagLower = filters.tag.toLowerCase();
+          const taskTags = task.tags?.toLowerCase() || '';
+          if (!taskTags.includes(tagLower)) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+    }, [tasks, searchTerm, filters]);
+
     if(isLoading) return <div>Loading...</div>;
     if(error){
          return <div>An error occurred while fetching tasks</div>}
@@ -89,7 +137,7 @@ const TableView = ({id,setIsModalNewTaskOpen}: Props) => {
               isSmallText/>
         </div>
         <DataGrid 
-        rows={tasks || []}
+        rows={filteredTasks || []}
         columns={columns}
         className={dataGridClassNames}
         sx={dataGridSxStyles(isDarkMode)}

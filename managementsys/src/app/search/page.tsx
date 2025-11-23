@@ -1,0 +1,62 @@
+"use client";
+import { useSearchQuery } from '@/state/api';
+import React, { useEffect, useState } from 'react'
+import {debounce} from "lodash";
+import Header from '@/(components)/Header';
+import TaskCard from '@/(components)/TaskCard';
+import ProjectCard from '@/(components)/ProjectCard';
+import UserCard from '@/(components)/UserCard';
+
+type Props = {}
+const Search = () => {
+    const [searchTerm,setSearchTerm]=useState("");
+    const {data:searchResults,isLoading,isError,error} = useSearchQuery(searchTerm || "",{
+        skip:!searchTerm || searchTerm.length<3
+    });
+    const handleSearch=debounce(
+        (event:React.ChangeEvent<HTMLInputElement>)=>{
+            setSearchTerm(event.target.value);
+        },500,
+    );
+    useEffect(()=>{
+        return handleSearch.cancel;
+    },[handleSearch]);
+    return (
+        <div className="p-8">
+            <Header name="Search"/>
+            <div>
+                <input type="text" placeholder="Search..." className="w-1/2 rounded border p-3 shadow " onChange={handleSearch}></input>
+            </div>
+            <div className='p-5'>
+                {isLoading && <p>Loading...</p>}
+                {isError && (
+                    <div className="text-red-500">
+                        <p>Error occurred while fetching search</p>
+                        {error && 'data' in error && (
+                            <p className="text-sm mt-2">{(error.data as any)?.message || 'Unknown error'}</p>
+                        )}
+                    </div>
+                )}
+                {!isLoading && !isError && searchResults && (
+                    <div>
+                        {searchResults.tasks && searchResults.tasks?.length>0 &&(
+                            <h2>Tasks</h2>
+                        )}
+                        {searchResults.tasks?.map((task)=><TaskCard key={task.id} task={task}/>)}
+
+                        {searchResults.projects && searchResults.projects?.length>0 &&(
+                            <h2>Projects</h2>
+                        )}
+                        {searchResults.projects?.map((project)=><ProjectCard key={project.id} project={project}/>)}
+
+                        {searchResults.users && searchResults.users?.length>0 &&(
+                            <h2>Users</h2>
+                        )}
+                        {searchResults.users?.map((user)=><UserCard key={user.userId} user={user}/>)}
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+export default Search;

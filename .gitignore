@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+managementsys/node_modules/
+server/node_modules/
+
+# Build outputs
+managementsys/dist/
+server/dist/
+managementsys/.next/
+server/generated/
+
+# Environment variables
+managementsys/.env
+managementsys/.env.local
+server/.env
+server/.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

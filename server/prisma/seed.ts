@@ -9,7 +9,10 @@ const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 async function deleteAllData(orderedFileNames: string[]) {
-  const modelNames = orderedFileNames.map((fileName) => {
+  // Delete in reverse order to respect foreign key constraints
+  // Child tables first, then parent tables
+  const reversedFileNames = [...orderedFileNames].reverse();
+  const modelNames = reversedFileNames.map((fileName) => {
     const modelName = path.basename(fileName, path.extname(fileName));
     return modelName.charAt(0).toUpperCase() + modelName.slice(1);
   });
@@ -48,9 +51,11 @@ async function main() {
     const model: any = prisma[modelName as keyof typeof prisma];
 
     try {
-      for (const data of jsonData) {
-        await model.create({ data });
-      }
+      // Use createMany with skipDuplicates to handle existing records
+      await model.createMany({
+        data: jsonData,
+        skipDuplicates: true,
+      });
       console.log(`Seeded ${modelName} with data from ${fileName}`);
     } catch (error) {
       console.error(`Error seeding data for ${modelName}:`, error);

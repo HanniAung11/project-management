@@ -26,7 +26,7 @@ const columns:GridColDef[]=[
     ),},
 ];
 const Users = () => {
-    const {data:users,isLoading,isError,error} = useGetUsersQuery();
+    const {data:users,isLoading,isError} = useGetUsersQuery();
     const isDarkMode=useAppSelector((state)=>state.global.isDarkMode);
     if(isLoading) return <div>Loading...</div>;
     if(isError) return <div>Error occurred while fetching users</div>;

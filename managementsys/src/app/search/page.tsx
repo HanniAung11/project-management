@@ -7,7 +7,6 @@ import TaskCard from '@/(components)/TaskCard';
 import ProjectCard from '@/(components)/ProjectCard';
 import UserCard from '@/(components)/UserCard';
 
-type Props = {}
 const Search = () => {
     const [searchTerm,setSearchTerm]=useState("");
     const {data:searchResults,isLoading,isError,error} = useSearchQuery(searchTerm || "",{
@@ -33,7 +32,7 @@ const Search = () => {
                     <div className="text-red-500">
                         <p>Error occurred while fetching search</p>
                         {error && 'data' in error && (
-                            <p className="text-sm mt-2">{(error.data as any)?.message || 'Unknown error'}</p>
+                            <p className="text-sm mt-2">{(error.data as { message?: string })?.message || 'Unknown error'}</p>
                         )}
                     </div>
                 )}

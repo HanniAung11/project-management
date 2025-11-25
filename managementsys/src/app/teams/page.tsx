@@ -4,7 +4,6 @@ import { useGetTeamsQuery } from '@/state/api'
 import { useAppSelector } from '../redux';
 import Header from '@/(components)/Header';
 import { DataGrid,GridColDef,GridToolbarContainer,GridToolbarFilterButton,GridToolbarExport } from '@mui/x-data-grid';
-import Image from 'next/image';
 import { dataGridClassNames, dataGridSxStyles } from '@/lib/utils';
 
 const CustomToolbar=()=>(
@@ -22,7 +21,7 @@ const columns:GridColDef[]=[
 ];
 const Teams = () => {
     
-    const {data:teams,isLoading,isError,error} = useGetTeamsQuery();
+    const {data:teams,isLoading,isError} = useGetTeamsQuery();
     const isDarkMode=useAppSelector((state)=>state.global.isDarkMode);
     if(isLoading) return <div>Loading...</div>;
     if(isError) return <div>Error occurred while fetching teams</div>;

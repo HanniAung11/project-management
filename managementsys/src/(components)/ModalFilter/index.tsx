@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '../Modal';
 import { Priority, Status } from '@/state/api';
-import { X } from 'lucide-react';
 
 type FilterState = {
     priority?: Priority | '';

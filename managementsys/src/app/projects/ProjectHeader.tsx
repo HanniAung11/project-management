@@ -26,7 +26,7 @@ function ProjectHeader({activeTab,setActiveTab, searchTerm, onSearchChange, filt
     try {
       await navigator.clipboard.writeText(url);
       alert('Project URL copied to clipboard!');
-    } catch (err) {
+    } catch {
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = url;
@@ -35,7 +35,7 @@ function ProjectHeader({activeTab,setActiveTab, searchTerm, onSearchChange, filt
       try {
         document.execCommand('copy');
         alert('Project URL copied to clipboard!');
-      } catch (fallbackErr) {
+      } catch {
         alert('Failed to copy URL. Please copy manually: ' + url);
       }
       document.body.removeChild(textArea);

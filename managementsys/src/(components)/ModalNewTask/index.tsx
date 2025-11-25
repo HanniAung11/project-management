@@ -43,7 +43,19 @@ const ModalNewTask = ({isOpen,onClose,id=null}: Props) => {
     if(!title || !authorUserId || (id === null && !projectId)) return;
     
     try {
-      const taskData: any = {
+      const taskData: {
+        title: string;
+        description?: string;
+        status: Status;
+        priority: Priority;
+        tags?: string;
+        authorUserId: number;
+        projectId: number;
+        startDate?: string;
+        dueDate?: string;
+        points?: number;
+        assignedUserId?: number;
+      } = {
         title,
         description: description || undefined,
         status: status || Status.ToDo, // Ensure status is always set

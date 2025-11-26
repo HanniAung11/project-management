@@ -1,4 +1,4 @@
-import {createApi,fetchBaseQuery} from '@reduxjs/toolkit/query/react'
+import {createApi,fetchBaseQuery,FetchBaseQueryError} from '@reduxjs/toolkit/query/react'
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 console.log(" API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
 export interface Project{
@@ -89,8 +89,7 @@ export const api=createApi({
     reducerPath:'api',
     tagTypes:["Projects","Tasks","Users","Teams"],
     endpoints:(build)=>({
-        getAuthUser:build.query(
-            {
+        getAuthUser:build.query<{user:any,userSub:string|undefined,userDetails:User},void>({
                 queryFn:async(_, _queryApi, _extraoptions,fetchWithBQ)=>{
                     try{
                         const user=await getCurrentUser();
@@ -98,11 +97,18 @@ export const api=createApi({
                         if(!session) throw new Error("Not authenticated");
                         const { userSub }=session;
                         const userDetailsResponse=await fetchWithBQ(`users/${userSub}`);
+                        if(userDetailsResponse.error){
+                            return {error:userDetailsResponse.error};
+                        }
                         const userDetails=userDetailsResponse.data as User;
                         return {data:{user,userSub,userDetails}}
                     }catch(error: unknown){
                         const errorMessage = error instanceof Error ? error.message : "Could not fetch user data";
-                        return {error: errorMessage};
+                        const fetchError: FetchBaseQueryError = {
+                            status: 500,
+                            data: errorMessage,
+                        };
+                        return {error: fetchError};
                 }
             },
     }),

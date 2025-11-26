@@ -1,5 +1,5 @@
 import {createApi,fetchBaseQuery,FetchBaseQueryError} from '@reduxjs/toolkit/query/react'
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser, AuthUser } from 'aws-amplify/auth';
 console.log(" API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
 export interface Project{
     id:number;
@@ -89,7 +89,7 @@ export const api=createApi({
     reducerPath:'api',
     tagTypes:["Projects","Tasks","Users","Teams"],
     endpoints:(build)=>({
-        getAuthUser:build.query<{user:any,userSub:string|undefined,userDetails:User},void>({
+        getAuthUser:build.query<{user:AuthUser,userSub:string|undefined,userDetails:User},void>({
                 queryFn:async(_, _queryApi, _extraoptions,fetchWithBQ)=>{
                     try{
                         const user=await getCurrentUser();

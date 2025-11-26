@@ -1,4 +1,4 @@
-import express from "express"
+import express, { type Request, type Response } from "express"
 import dotenv from "dotenv"
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -9,6 +9,7 @@ import taskRoutes from "./routes/taskRoutes.js"
 import searchRoutes from "./routes/searchRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import teamRoutes from "./routes/teamRoutes.js"
+import { PrismaClient } from "@prisma/client";
 // route imports
 
 //configurations
@@ -33,5 +34,30 @@ app.use("/search",searchRoutes)
 app.use("/users",userRoutes)
 app.use("/teams",teamRoutes)
 
+const prisma = new PrismaClient();
+
+app.post("/create-user",async(req:Request,res:Response)=>{
+    
+    try{
+        const {username,cognitoId,profilePictureUrl="i1.jpg",teamId=1,}=req.body;
+        const newUser=await prisma.user.create({
+            data:{
+                username,
+                cognitoId,
+                profilePictureUrl,
+                teamId
+            }
+        });
+        res.json({message:"User Created Successfully",newUser});
+    }catch(error:any){
+        res.status(500).json({message:`Error retrieving users:${error.message}`});
+    }
+
+})
+
+
 const port = Number(process.env.PORT) || 8000;
 app.listen(port, "0.0.0.0",() => console.log(`Server running on port ${port}`));
+
+
+

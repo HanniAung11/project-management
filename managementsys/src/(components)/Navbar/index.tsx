@@ -12,7 +12,7 @@ const Navbar = () => {
     (state) => state.global.isSidebarCollapsed,
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-  const {data:currentUser, isLoading:isUserLoading}=useGetAuthUserQuery();
+  const {data:currentUser}=useGetAuthUserQuery();
   const handleSignOut=async()=>{
   try{
     await signOut();

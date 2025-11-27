@@ -15,7 +15,7 @@ const Sidebar = () => {
   const {data:projects}=useGetProjectsQuery();
   const dispatch=useAppDispatch();
   const isSidebarCollapsed=useAppSelector((state)=>state.global.isSidebarCollapsed,);
-  const {data:currentUser, isLoading:isUserLoading}=useGetAuthUserQuery();
+  const {data:currentUser}=useGetAuthUserQuery();
     const handleSignOut=async()=>{
     try{
       await signOut();

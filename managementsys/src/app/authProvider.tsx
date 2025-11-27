@@ -4,17 +4,23 @@ import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 
 // Get configuration from environment variables (remove quotes if present)
+const userPoolId = (process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || "").replace(/^"|"$/g, '');
+const userPoolClientId = (process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID || "").replace(/^"|"$/g, '');
 
 // Configure Amplify with Cognito
-
+if (userPoolId && userPoolClientId) {
   Amplify.configure({
     Auth: {
       Cognito: {
-        userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || "",
-        userPoolClientId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID || "",
+        userPoolId: userPoolId,
+        userPoolClientId: userPoolClientId,
       }
     }
   });
+} else if (typeof window !== 'undefined') {
+  // Only log in browser, not during SSR
+  console.warn('AWS Cognito configuration is missing. Please check your environment variables.');
+}
 
 
 const formFields={
@@ -53,6 +59,11 @@ type AuthProviderProps = {
 };
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
+  // If Cognito is not configured, show children anyway (for development/testing)
+  if (!userPoolId || !userPoolClientId) {
+    return <div>{children}</div>;
+  }
+
   return (
     <Authenticator 
       formFields={formFields}
@@ -60,13 +71,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
       signUpAttributes={['email']}
     >
       {({ user }) => {
-        // When user is authenticated, show the app
+        // This function is only called when user is authenticated
         // When user is not authenticated, Authenticator automatically shows login/signup form
-        if (user) {
-          return <div>{children}</div>;
-        }
-        // Return null to let Authenticator show the login form
-        return null;
+        return <div>{children}</div>;
       }}
     </Authenticator>
   )

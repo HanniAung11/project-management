@@ -54,17 +54,21 @@ type AuthProviderProps = {
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   return (
-    <div className="mt-5">
-        <Authenticator formFields={formFields}>
-            {({user}: {user?: {username?: string}}) => user ?(
-                <div>{children}</div>
-            ):(
-                <div>
-                    <h1>Please sign in below:</h1>
-                </div>
-            )}
-        </Authenticator>
-    </div>
+    <Authenticator 
+      formFields={formFields}
+      loginMechanisms={['username']}
+      signUpAttributes={['email']}
+    >
+      {({ user }) => {
+        // When user is authenticated, show the app
+        // When user is not authenticated, Authenticator automatically shows login/signup form
+        if (user) {
+          return <div>{children}</div>;
+        }
+        // Return null to let Authenticator show the login form
+        return null;
+      }}
+    </Authenticator>
   )
 }
 export default AuthProvider;

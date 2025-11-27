@@ -12,7 +12,7 @@ const Navbar = () => {
     (state) => state.global.isSidebarCollapsed,
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-  const {data:currentUser}=useGetAuthUserQuery();
+  const {data:currentUser, isLoading:isUserLoading}=useGetAuthUserQuery();
   const handleSignOut=async()=>{
   try{
     await signOut();
@@ -20,7 +20,8 @@ const Navbar = () => {
     console.error("Error signing out:",error);
   }
   }
-  if(!currentUser) return null;
+  // Don't return null - show navbar even while loading
+  // The AuthProvider will handle showing login form when not authenticated
   const currentUserDetails=currentUser?.userDetails;
   return (
     <div className="flex items-center justify-between bg-white px-4 py-3 dark:bg-black">

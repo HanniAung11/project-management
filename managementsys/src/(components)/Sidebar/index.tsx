@@ -15,7 +15,7 @@ const Sidebar = () => {
   const {data:projects}=useGetProjectsQuery();
   const dispatch=useAppDispatch();
   const isSidebarCollapsed=useAppSelector((state)=>state.global.isSidebarCollapsed,);
-  const {data:currentUser}=useGetAuthUserQuery();
+  const {data:currentUser, isLoading:isUserLoading}=useGetAuthUserQuery();
     const handleSignOut=async()=>{
     try{
       await signOut();
@@ -23,10 +23,12 @@ const Sidebar = () => {
       console.error("Error signing out:",error);
     }
     }
-    if(!currentUser) return null;
     const currentUserDetails=currentUser?.userDetails;
   
   const sidebarClassNames=`fixed flex flex-col h-[100%] justify-between shadow-xl transition-all duration-300 h-full z-40 dark:bg-black overflow-y-auto bg-white ${isSidebarCollapsed?"w-0 hidden":"w-64"} `;
+  
+  // Don't return null - show sidebar even while loading or if user query fails
+  // This ensures the sidebar is always visible on deployment
   return (
     <div className={sidebarClassNames}>
         <div className="flex h-[100%] w-full flex-col justify-start">

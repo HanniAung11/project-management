@@ -25,7 +25,7 @@ const Sidebar = () => {
     }
     const currentUserDetails=currentUser?.userDetails;
   
-  const sidebarClassNames=`fixed flex flex-col h-[100%] justify-between shadow-xl transition-all duration-300 h-full z-40 dark:bg-black overflow-y-auto bg-white ${isSidebarCollapsed?"w-0 hidden":"w-64"} `;
+  const sidebarClassNames=`fixed flex flex-col h-[100%] justify-between shadow-xl transition-all duration-300 h-full z-40 dark:bg-black overflow-y-auto bg-white ${isSidebarCollapsed?"w-0 hidden":"w-full sm:w-64"} `;
   
   // Don't return null - show sidebar even while loading or if user query fails
   // This ensures the sidebar is always visible on deployment
@@ -33,7 +33,7 @@ const Sidebar = () => {
     <div className={sidebarClassNames}>
         <div className="flex h-[100%] w-full flex-col justify-start">
             {/* Top logo */}
-            <div className="z-50 flex min-h-[56px] items-center justify-between bg-white px-6 pt-3 dark:bg-dark-bg">
+            <div className="z-50 flex min-h-[56px] items-center justify-between bg-white px-4 sm:px-6 pt-3 dark:bg-black">
                 <div className="text-xl font-bold text-gray-800 dark:text-white">
                     HH 
                 </div>
@@ -45,10 +45,10 @@ const Sidebar = () => {
                 )}
             </div>
             {/* Team */}
-            <div className="flex items-center gap-5 border-y-[1.5px] border-gray-200 px-8 py-4 dark:border-gray-700">
-                <Image src="/logo.png" alt="logo" width={40} height={40}/>
-                <div>
-                    <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
+            <div className="flex items-center gap-3 sm:gap-5 border-y-[1.5px] border-gray-200 px-4 sm:px-8 py-3 sm:py-4 dark:border-gray-700">
+                <Image src="/R.jpg" alt="logo" width={40} height={40} className="rounded flex-shrink-0"/>
+                <div className="min-w-0">
+                    <h3 className="text-sm sm:text-md font-bold tracking-wide dark:text-gray-200 truncate">
                         HH Team
                     </h3>
                     <div className="mt-1 flex items-center">
@@ -78,10 +78,10 @@ const Sidebar = () => {
                 <SidebarLink key={project.id} icon={Briefcase} label={project.name} href={`/projects/${project.id}`}/>
             ))}
             {/* Priority list */}
-            <button onClick={()=>setShowPriority((prev)=>!prev)} className="flex w-full items-center justify-between px-8 py-3 text-gray-500">
+            <button onClick={()=>setShowPriority((prev)=>!prev)} className="flex w-full items-center justify-between px-4 sm:px-8 py-2 sm:py-3 text-gray-500 text-sm sm:text-base">
                 <span className="">Priority</span>
                 {showPriority?(
-                    <ChevronUp className="h-5 w-5"/>):(<ChevronDown className="h-5 w-5"/>
+                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5"/>):(<ChevronDown className="h-4 w-4 sm:h-5 sm:w-5"/>
                 )}
             </button>
                 {showPriority && (
@@ -141,13 +141,13 @@ const SidebarLink=({
     
     return (
     <Link href={href} className="w-full">
-        <div className={`relative flex cursor-pointer items-center gap-3 transition-colors hover:bg-gray-100 dark:bg-black dark:hover dark:hover:bg-gray-700
-        ${isActive?"bg-gray-100 text-white dark:bg-gray-600":""} justify-start px-8 py-3`}>
+        <div className={`relative flex cursor-pointer items-center gap-2 sm:gap-3 transition-colors hover:bg-gray-100 dark:bg-black dark:hover dark:hover:bg-gray-700
+        ${isActive?"bg-gray-100 text-white dark:bg-gray-600":""} justify-start px-4 sm:px-8 py-2 sm:py-3`}>
             {isActive && (
                 <div className="absolute left-0 top-0 h-[100%] w-[5px] bg-pink-300"/>
                 )}
-                <Icon className="h-6 w-6 text-gray-800 dark:text-gray-100"/>
-                <span className={`font-medium text-gray-800 dark:text-gray-100`}>
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-800 dark:text-gray-100 flex-shrink-0"/>
+                <span className={`font-medium text-sm sm:text-base text-gray-800 dark:text-gray-100 truncate`}>
                     {label}
                 </span>
         </div>
